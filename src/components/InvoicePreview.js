@@ -6,16 +6,6 @@ const InvoicePreview = ({ invoice, onClose, onEdit, onMarkAsPaid }) => {
   const invoiceRef = useRef();
 
   const handlePrint = () => {
-    // Check if mobile device
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
-    if (isMobile) {
-      if (window.confirm('📱 Mobile Printing\n\nFor best results:\n• Take a screenshot\n• Use share to save/print\n• Or continue with browser print\n\nContinue with browser print?')) {
-        performPrint();
-      }
-      return;
-    }
-    
     performPrint();
   };
 
@@ -39,11 +29,11 @@ const InvoicePreview = ({ invoice, onClose, onEdit, onMarkAsPaid }) => {
               body { 
                 font-family: 'Inter', sans-serif; 
                 margin: 0; 
-                padding: 15px; 
+                padding: 10px; 
                 color: #1e293b; 
                 background: white;
-                font-size: 12px;
-                line-height: 1.3;
+                font-size: 14px;
+                line-height: 1.4;
               }
               
               .invoice-container { 
@@ -52,13 +42,15 @@ const InvoicePreview = ({ invoice, onClose, onEdit, onMarkAsPaid }) => {
                 padding: 0;
               }
               
+              /* Compact Header with Larger Fonts */
               .company-header {
                 display: flex;
                 justify-content: space-between;
                 align-items: flex-start;
-                margin-bottom: 20px;
-                padding-bottom: 15px;
+                margin-bottom: 15px;
+                padding-bottom: 10px;
                 border-bottom: 2px solid #2563eb;
+                gap: 15px;
               }
               
               .logo-section {
@@ -66,34 +58,38 @@ const InvoicePreview = ({ invoice, onClose, onEdit, onMarkAsPaid }) => {
               }
               
               .logo {
-                max-width: 150px;
+                max-width: 100px;
                 height: auto;
-                margin-bottom: 10px;
+                margin-bottom: 8px;
               }
               
               .company-info h1 {
                 color: #2563eb;
-                font-size: 24px;
+                font-size: 18px;
                 font-weight: 700;
-                margin-bottom: 5px;
+                margin-bottom: 4px;
               }
               
               .company-info p {
                 color: #64748b;
-                font-size: 11px;
+                font-size: 12px;
                 margin: 2px 0;
+                line-height: 1.3;
               }
               
               .invoice-title-section {
-                text-align: right;
                 flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
               }
               
               .invoice-title {
                 color: #2563eb;
-                font-size: 28px;
+                font-size: 24px;
                 font-weight: 700;
-                margin-bottom: 10px;
+                margin-bottom: 8px;
+                text-transform: uppercase;
               }
               
               .invoice-meta {
@@ -101,65 +97,88 @@ const InvoicePreview = ({ invoice, onClose, onEdit, onMarkAsPaid }) => {
                 padding: 12px;
                 border-radius: 6px;
                 border-left: 3px solid #2563eb;
+                width: 100%;
               }
               
               .invoice-meta p {
                 margin: 3px 0;
-                font-size: 11px;
+                font-size: 12px;
+                font-weight: 500;
               }
               
+              /* From and To Sections with Larger Fonts */
               .details-section {
                 display: flex;
                 justify-content: space-between;
-                margin-bottom: 20px;
-                gap: 20px;
+                gap: 15px;
+                margin-bottom: 15px;
               }
               
               .from-section, .to-section {
                 flex: 1;
-                padding: 12px;
+                padding: 15px;
                 background: #f8fafc;
                 border-radius: 6px;
+                border: 1px solid #e2e8f0;
               }
               
               .from-section h3, .to-section h3 {
                 color: #1e293b;
-                font-size: 13px;
+                font-size: 16px;
                 margin-bottom: 8px;
-                border-bottom: 1px solid #e2e8f0;
+                border-bottom: 2px solid #2563eb;
                 padding-bottom: 5px;
+                font-weight: 600;
               }
               
               .from-address p, .to-address p {
-                margin: 3px 0;
-                font-size: 11px;
+                margin: 4px 0;
+                font-size: 13px;
                 color: #475569;
+                line-height: 1.3;
               }
               
+              .from-address p:first-child, .to-address p:first-child {
+                font-weight: 600;
+                color: #1e293b;
+                font-size: 14px;
+              }
+              
+              /* Items Table with Larger Fonts */
               .invoice-items {
                 width: 100%;
                 border-collapse: collapse;
-                margin: 15px 0;
-                font-size: 11px;
+                margin: 12px 0;
+                font-size: 13px;
               }
               
               .invoice-items th {
                 background: #2563eb;
                 color: white;
-                padding: 8px 6px;
+                padding: 10px 8px;
                 text-align: left;
                 font-weight: 600;
-                font-size: 10px;
+                font-size: 12px;
               }
               
               .invoice-items td {
-                padding: 6px;
+                padding: 8px;
                 border-bottom: 1px solid #e2e8f0;
-                font-size: 10px;
+                font-size: 12px;
+              }
+              
+              .invoice-items tr:nth-child(even) {
+                background: #f8fafc;
+              }
+              
+              /* Totals Section with Larger Fonts */
+              .totals-section {
+                display: flex;
+                justify-content: flex-end;
+                margin-top: 12px;
               }
               
               .invoice-totals {
-                margin-left: auto;
                 width: 250px;
                 background: #f8fafc;
                 padding: 15px;
@@ -170,21 +189,37 @@ const InvoicePreview = ({ invoice, onClose, onEdit, onMarkAsPaid }) => {
               .totals-row {
                 display: flex;
                 justify-content: space-between;
-                margin-bottom: 5px;
-                font-size: 11px;
+                margin-bottom: 6px;
+                font-size: 14px;
+                padding: 3px 0;
+              }
+              
+              .discount-row {
+                color: #ef4444;
+                font-weight: 500;
               }
               
               .grand-total {
                 font-weight: bold;
-                font-size: 13px;
-                border-top: 1px solid #cbd5e1;
+                font-size: 16px;
+                border-top: 2px solid #cbd5e1;
                 padding-top: 8px;
-                margin-top: 5px;
+                margin-top: 6px;
+                color: #2563eb;
+              }
+              
+              /* Notes and Footer with Larger Fonts */
+              .footer-section {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                gap: 15px;
+                margin-top: 15px;
               }
               
               .invoice-notes {
-                margin-top: 15px;
-                padding: 12px;
+                flex: 2;
+                padding: 15px;
                 background: #fff3cd;
                 border-radius: 6px;
                 border-left: 3px solid #f59e0b;
@@ -192,31 +227,35 @@ const InvoicePreview = ({ invoice, onClose, onEdit, onMarkAsPaid }) => {
               
               .invoice-notes h3 {
                 color: #92400e;
-                margin-bottom: 5px;
-                font-size: 12px;
+                margin-bottom: 8px;
+                font-size: 14px;
+                font-weight: 600;
               }
               
               .invoice-notes p {
                 color: #92400e;
                 line-height: 1.4;
                 margin: 0;
-                font-size: 11px;
+                font-size: 13px;
               }
               
               .invoice-footer {
-                margin-top: 20px;
-                text-align: center;
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
                 color: #64748b;
                 font-style: italic;
-                font-size: 10px;
-                padding-top: 10px;
+                font-size: 12px;
+                padding: 15px;
                 border-top: 1px solid #e2e8f0;
               }
               
+              /* Status Badge with Larger Font */
               .status-badge {
                 display: inline-block;
                 padding: 4px 8px;
-                border-radius: 12px;
+                border-radius: 10px;
                 font-size: 10px;
                 font-weight: 600;
                 text-transform: uppercase;
@@ -232,16 +271,14 @@ const InvoicePreview = ({ invoice, onClose, onEdit, onMarkAsPaid }) => {
                 color: #92400e;
               }
               
-              .status-overdue {
-                background: #fee2e2;
-                color: #991b1b;
-              }
-              
+              /* Print Optimization with Larger Fonts */
               @media print {
                 body {
                   margin: 0;
-                  padding: 10px;
-                  font-size: 11px;
+                  padding: 8px;
+                  font-size: 13px;
+                  -webkit-print-color-adjust: exact;
+                  print-color-adjust: exact;
                 }
                 
                 .invoice-container {
@@ -254,68 +291,67 @@ const InvoicePreview = ({ invoice, onClose, onEdit, onMarkAsPaid }) => {
                   display: none !important;
                 }
                 
-                /* Ensure everything fits on one page */
+                /* Force single page with minimal margins */
+                @page {
+                  margin: 0.4cm;
+                  size: A4;
+                }
+                
+                html, body {
+                  height: 99%;
+                  overflow: hidden;
+                }
+                
+                /* Prevent page breaks */
+                .company-header,
+                .details-section,
+                .invoice-items,
+                .totals-section,
+                .footer-section {
+                  page-break-inside: avoid;
+                  break-inside: avoid;
+                }
+                
+                .invoice-items {
+                  page-break-inside: avoid;
+                }
+                
+                /* Ensure everything fits with larger fonts */
                 .company-header {
-                  margin-bottom: 15px;
-                  padding-bottom: 10px;
+                  margin-bottom: 12px;
+                  padding-bottom: 8px;
                 }
                 
                 .details-section {
-                  margin-bottom: 15px;
+                  margin-bottom: 12px;
                 }
                 
                 .invoice-items {
                   margin: 10px 0;
+                  font-size: 12px;
                 }
                 
-                /* Prevent page breaks inside key sections */
-                .company-header,
-                .details-section,
-                .invoice-totals,
-                .invoice-notes {
-                  page-break-inside: avoid;
-                }
-                
-                /* Force the content to stay together */
-                .invoice-content {
-                  page-break-inside: avoid;
-                }
-              }
-
-              /* Mobile-specific styles */
-              @media (max-width: 768px) {
-                body {
-                  padding: 10px;
+                .invoice-items th {
                   font-size: 11px;
+                  padding: 8px 6px;
                 }
                 
-                .company-header {
-                  flex-direction: column;
-                  gap: 15px;
-                }
-                
-                .invoice-title-section {
-                  text-align: left;
-                }
-                
-                .details-section {
-                  flex-direction: column;
-                  gap: 15px;
+                .invoice-items td {
+                  font-size: 11px;
+                  padding: 6px;
                 }
                 
                 .invoice-totals {
-                  width: 100%;
-                  margin: 15px 0;
+                  width: 220px;
+                  padding: 12px;
                 }
                 
-                .invoice-items {
-                  font-size: 10px;
+                .totals-row {
+                  font-size: 13px;
                 }
                 
-                .invoice-items th,
-                .invoice-items td {
-                  padding: 4px;
-                  font-size: 9px;
+                .grand-total {
+                  font-size: 15px;
                 }
               }
             </style>
@@ -325,20 +361,16 @@ const InvoicePreview = ({ invoice, onClose, onEdit, onMarkAsPaid }) => {
               ${invoiceRef.current.innerHTML}
             </div>
             <script>
-              // Better mobile handling
               setTimeout(() => {
                 try {
                   window.print();
-                  // Don't auto-close on mobile - let user decide
-                  if (!/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-                    setTimeout(() => {
-                      window.close();
-                    }, 1000);
-                  }
+                  setTimeout(() => {
+                    window.close();
+                  }, 100);
                 } catch (error) {
                   console.log('Print completed or cancelled');
                 }
-              }, 500);
+              }, 300);
             </script>
           </body>
         </html>
@@ -347,20 +379,72 @@ const InvoicePreview = ({ invoice, onClose, onEdit, onMarkAsPaid }) => {
       const printWindow = window.open('', '_blank', 'width=800,height=600');
       
       if (!printWindow) {
-        alert('⚠️ Please allow popups for this site to enable printing. On mobile, try taking a screenshot instead.');
+        alert('Please allow popups to enable printing.');
         return;
       }
 
       printWindow.document.write(printContent);
       printWindow.document.close();
       
-      // Focus the window to help with mobile browsers
-      printWindow.focus();
-      
     } catch (error) {
       console.error('Print error:', error);
-      alert('Printing failed. Please try taking a screenshot of the invoice instead.');
+      alert('Printing failed. Please try taking a screenshot instead.');
     }
+  };
+
+  // WhatsApp Sharing Function
+  const handleSendWhatsApp = () => {
+    if (!invoice.to.phone) {
+      alert('Client phone number is required to send via WhatsApp.');
+      return;
+    }
+
+    // Format phone number (remove any non-digit characters)
+    const phoneNumber = invoice.to.phone.replace(/\D/g, '');
+    
+    // Create the message content
+    const message = generateWhatsAppMessage();
+    
+    // Create WhatsApp URL
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    
+    // Open WhatsApp in new tab
+    window.open(whatsappUrl, '_blank');
+  };
+
+  const generateWhatsAppMessage = () => {
+    const itemsList = invoice.items.map(item => 
+      `• ${item.description} - Qty: ${item.quantity} - ₹${item.total.toFixed(2)}`
+    ).join('\n');
+
+    const discountText = shouldShowDiscount() ? 
+      `Discount: -₹${getDiscountAmount().toFixed(2)}` : '';
+
+    return `Hello ${invoice.to.name},
+
+Your invoice #${invoice.invoiceNumber} from ${invoice.from.name} is ready.
+
+📅 Date: ${format(parseISO(invoice.date), 'MMM dd, yyyy')}
+👤 Client: ${invoice.to.name}
+🚗 Vehicle: ${invoice.to.vehicleName || 'N/A'} (${invoice.to.vehicleNumber || 'N/A'})
+
+📋 Services/Items:
+${itemsList}
+
+💵 Summary:
+Subtotal: ₹${invoice.subtotal.toFixed(2)}
+${discountText}
+Tax (${invoice.taxRate}%): ₹${invoice.tax.toFixed(2)}
+*Total Amount: ₹${invoice.total.toFixed(2)}*
+
+Status: ${getStatusText()}
+${invoice.notes ? `\n📝 Notes: ${invoice.notes}` : ''}
+
+Please review the attached invoice and let us know if you have any questions.
+
+Thank you for your business!
+${invoice.from.name}
+${invoice.from.phone}`;
   };
 
   const getStatus = () => {
@@ -371,6 +455,34 @@ const InvoicePreview = ({ invoice, onClose, onEdit, onMarkAsPaid }) => {
   const getStatusText = () => {
     if (invoice.status === 'paid') return 'Paid';
     return 'Pending';
+  };
+
+  const getDiscountAmount = () => {
+    if (invoice.discountAmount && invoice.discountAmount > 0) {
+      return invoice.discountAmount;
+    }
+    return 0;
+  };
+
+  const getDiscountDescription = () => {
+    if (!invoice.discount || invoice.discount.type === 'none' || !invoice.discountAmount || invoice.discountAmount === 0) {
+      return '';
+    }
+    
+    if (invoice.discount.type === 'percentage') {
+      return `Discount (${invoice.discount.value}%)`;
+    } else if (invoice.discount.type === 'fixed') {
+      return 'Discount';
+    }
+    
+    return 'Discount';
+  };
+
+  const shouldShowDiscount = () => {
+    return invoice.discount && 
+           invoice.discount.type !== 'none' && 
+           invoice.discountAmount && 
+           invoice.discountAmount > 0;
   };
 
   return (
@@ -404,6 +516,14 @@ const InvoicePreview = ({ invoice, onClose, onEdit, onMarkAsPaid }) => {
           <button onClick={onEdit} className="btn btn-outline">
             ✏️ Edit Invoice
           </button>
+          <button 
+            onClick={handleSendWhatsApp} 
+            className="btn btn-whatsapp"
+            title="Send invoice via WhatsApp"
+            disabled={!invoice.to.phone}
+          >
+            💬 Send via WhatsApp
+          </button>
           <button onClick={handlePrint} className="btn btn-primary">
             🖨️ Print Invoice
           </button>
@@ -411,6 +531,7 @@ const InvoicePreview = ({ invoice, onClose, onEdit, onMarkAsPaid }) => {
       </div>
 
       <div ref={invoiceRef} className="invoice-document">
+        {/* Compact Header with Flexbox */}
         <div className="company-header">
           <div className="logo-section">
             <img 
@@ -419,19 +540,14 @@ const InvoicePreview = ({ invoice, onClose, onEdit, onMarkAsPaid }) => {
               className="logo"
               onError={(e) => {
                 e.target.style.display = 'none';
-                const companyInfo = document.querySelector('.company-info');
-                if (companyInfo) {
-                  companyInfo.style.display = 'block';
-                }
               }}
             />
-            <div className="company-info" style={{display: 'none'}}>
+            <div className="company-info">
               <h1>{invoice.from.name}</h1>
               <p>{invoice.from.address}</p>
               <p>{invoice.from.city}</p>
               <p>{invoice.from.email}</p>
               <p>{invoice.from.phone}</p>
-              <p>{invoice.from.website}</p>
             </div>
           </div>
           
@@ -448,6 +564,7 @@ const InvoicePreview = ({ invoice, onClose, onEdit, onMarkAsPaid }) => {
           </div>
         </div>
 
+        {/* From and To Sections Side by Side */}
         <div className="details-section">
           <div className="from-section">
             <h3>From</h3>
@@ -457,7 +574,6 @@ const InvoicePreview = ({ invoice, onClose, onEdit, onMarkAsPaid }) => {
               <p>{invoice.from.city}</p>
               <p>{invoice.from.email}</p>
               <p>{invoice.from.phone}</p>
-              <p>{invoice.from.website}</p>
             </div>
           </div>
 
@@ -470,6 +586,12 @@ const InvoicePreview = ({ invoice, onClose, onEdit, onMarkAsPaid }) => {
               <p>{invoice.to.phone}</p>
               {invoice.to.vehicleName && <p><strong>Vehicle Name:</strong> {invoice.to.vehicleName}</p>}
               {invoice.to.vehicleNumber && <p><strong>Vehicle Number:</strong> {invoice.to.vehicleNumber}</p>}
+              {(invoice.to.serviceAtKm !== undefined && invoice.to.serviceAtKm !== null && invoice.to.serviceAtKm !== '') && (
+                <p><strong>Service at (KM):</strong> {invoice.to.serviceAtKm} KM</p>
+              )}
+              {(invoice.to.nextServiceAtKm !== undefined && invoice.to.nextServiceAtKm !== null && invoice.to.nextServiceAtKm !== '') && (
+                <p><strong>Next Service at (KM):</strong> {invoice.to.nextServiceAtKm} KM</p>
+              )}
             </div>
           </div>
         </div>
@@ -479,9 +601,9 @@ const InvoicePreview = ({ invoice, onClose, onEdit, onMarkAsPaid }) => {
             <thead>
               <tr>
                 <th>Description</th>
-                <th>Quantity</th>
+                <th>Qty</th>
                 <th>Price (₹)</th>
-                <th>Service Charge (₹)</th>
+                <th>Service (₹)</th>
                 <th>Total (₹)</th>
               </tr>
             </thead>
@@ -498,31 +620,44 @@ const InvoicePreview = ({ invoice, onClose, onEdit, onMarkAsPaid }) => {
             </tbody>
           </table>
 
-          <div className="invoice-totals">
-            <div className="totals-row">
-              <span>Subtotal:</span>
-              <span>₹{invoice.subtotal.toFixed(2)}</span>
-            </div>
-            <div className="totals-row">
-              <span>Tax ({invoice.taxRate}%):</span>
-              <span>₹{invoice.tax.toFixed(2)}</span>
-            </div>
-            <div className="totals-row grand-total">
-              <span>Total Amount:</span>
-              <span>₹{invoice.total.toFixed(2)}</span>
+          <div className="totals-section">
+            <div className="invoice-totals">
+              <div className="totals-row">
+                <span>Subtotal:</span>
+                <span>₹{invoice.subtotal.toFixed(2)}</span>
+              </div>
+              
+              {shouldShowDiscount() && (
+                <div className="totals-row discount-row">
+                  <span>{getDiscountDescription()}:</span>
+                  <span style={{ color: '#ef4444' }}>-₹{getDiscountAmount().toFixed(2)}</span>
+                </div>
+              )}
+              
+              <div className="totals-row">
+                <span>Tax ({invoice.taxRate}%):</span>
+                <span>₹{invoice.tax.toFixed(2)}</span>
+              </div>
+              
+              <div className="totals-row grand-total">
+                <span>Total Amount:</span>
+                <span>₹{invoice.total.toFixed(2)}</span>
+              </div>
             </div>
           </div>
         </div>
 
-        {invoice.notes && (
-          <div className="invoice-notes">
-            <h3>Notes</h3>
-            <p>{invoice.notes}</p>
+        {/* Notes and Footer in Single Row */}
+        <div className="footer-section">
+          {invoice.notes && (
+            <div className="invoice-notes">
+              <h3>Notes</h3>
+              <p>{invoice.notes}</p>
+            </div>
+          )}
+          <div className="invoice-footer">
+            <p>Thank you for your business!</p>
           </div>
-        )}
-
-        <div className="invoice-footer">
-          <p>Thank you for your business!</p>
         </div>
       </div>
     </div>

@@ -21,7 +21,9 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
       city: '',
       phone: '',
       vehicleName: '',
-      vehicleNumber: ''
+      vehicleNumber: '',
+      serviceAtKm: '', 
+      nextServiceAtKm: '' 
     },
     items: [{ 
       id: Date.now(), 
@@ -34,7 +36,11 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
     notes: 'Thank you for your business!',
     taxRate: 0,
     currency: 'INR',
-    status: 'pending'
+    status: 'pending',
+    discount: {
+      type: 'none',
+      value: 0
+    }
   });
 
   const [formData, setFormData] = useState(getInitialFormData());
@@ -44,7 +50,7 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
     items: []
   });
 
-  // Safe data validation and transformation - WRAPPED IN useCallback
+  // Safe data validation and transformation
   const validateAndTransformInvoiceData = useCallback((invoiceData) => {
     if (!invoiceData) return getInitialFormData();
     
@@ -65,9 +71,10 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
         city: invoiceData.to?.city || '',
         phone: invoiceData.to?.phone || '',
         vehicleName: invoiceData.to?.vehicleName || '',
-        vehicleNumber: invoiceData.to?.vehicleNumber || ''
+        vehicleNumber: invoiceData.to?.vehicleNumber || '',
+        serviceAtKm: invoiceData.to?.serviceAtKm || '',
+        nextServiceAtKm: invoiceData.to?.nextServiceAtKm || ''
       },
-      // Ensure items is always an array with proper structure
       items: Array.isArray(invoiceData.items) && invoiceData.items.length > 0
         ? invoiceData.items.map(item => ({
             id: item.id || Date.now() + Math.random(),
@@ -88,7 +95,11 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
       notes: invoiceData.notes || 'Thank you for your business!',
       taxRate: typeof invoiceData.taxRate === 'number' ? invoiceData.taxRate : 0,
       currency: 'INR',
-      status: invoiceData.status || 'pending'
+      status: invoiceData.status || 'pending',
+      discount: invoiceData.discount || {
+        type: 'none',
+        value: 0
+      }
     };
   }, []);
 
@@ -97,7 +108,6 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
       const validatedData = validateAndTransformInvoiceData(invoice);
       setFormData(validatedData);
       
-      // Initialize touched state with proper structure
       const initialItems = validatedData.items || [];
       setTouched({
         items: initialItems.map(() => ({})),
@@ -105,14 +115,12 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
         from: {}
       });
     } else {
-      // Generate new invoice number for new invoices
       const invoiceNumber = `INV-${Date.now().toString().slice(-6)}`;
       setFormData(prev => ({
         ...prev,
         invoiceNumber
       }));
       
-      // Initialize touched for new form
       setTouched({
         items: [{}],
         to: {},
@@ -132,7 +140,6 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
       newErrors.invoiceNumber = 'Invoice number is required';
     }
 
-    // Safe item validation
     const currentItems = Array.isArray(formData.items) ? formData.items : [];
     const itemErrors = currentItems.map((item, index) => {
       const itemError = {};
@@ -155,6 +162,15 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
       newErrors.items = itemErrors;
     }
 
+    if (formData.discount.type !== 'none') {
+      if (formData.discount.value < 0) {
+        newErrors.discount = 'Discount cannot be negative';
+      }
+      if (formData.discount.type === 'percentage' && formData.discount.value > 100) {
+        newErrors.discount = 'Discount percentage cannot exceed 100%';
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -169,7 +185,6 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
         }
       }));
 
-      // Mark field as touched
       setTouched(prev => ({
         ...prev,
         [section]: {
@@ -178,7 +193,6 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
         }
       }));
 
-      // Clear errors when user starts typing
       if (errors[section]?.[field]) {
         setErrors(prev => ({
           ...prev,
@@ -194,7 +208,6 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
         [field]: value
       }));
 
-      // Mark field as touched
       setTouched(prev => ({
         ...prev,
         [field]: true
@@ -209,12 +222,27 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
     }
   };
 
+  const handleDiscountChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      discount: {
+        ...prev.discount,
+        [field]: value
+      }
+    }));
+
+    if (errors.discount) {
+      setErrors(prev => ({
+        ...prev,
+        discount: null
+      }));
+    }
+  };
+
   const handleItemChange = (index, field, value) => {
-    // Ensure items array exists
     const currentItems = Array.isArray(formData.items) ? formData.items : [];
     const updatedItems = [...currentItems];
     
-    // Ensure the item at index exists
     if (!updatedItems[index]) {
       updatedItems[index] = { 
         id: Date.now() + Math.random(), 
@@ -233,7 +261,6 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
       [field]: numericValue
     };
     
-    // Calculate total
     if (field === 'quantity' || field === 'price' || field === 'serviceCharge') {
       const quantity = updatedItems[index].quantity;
       const price = updatedItems[index].price;
@@ -246,12 +273,10 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
       items: updatedItems
     }));
 
-    // Safe touched update for items
     setTouched(prev => {
       const currentTouchedItems = Array.isArray(prev.items) ? prev.items : [];
       const updatedTouchedItems = [...currentTouchedItems];
       
-      // Ensure the touched item at index exists
       if (!updatedTouchedItems[index]) {
         updatedTouchedItems[index] = {};
       }
@@ -267,7 +292,6 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
       };
     });
 
-    // Clear item errors
     if (errors.items?.[index]?.[field]) {
       setErrors(prev => ({
         ...prev,
@@ -294,7 +318,6 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
       ]
     }));
 
-    // Add new touched item
     setTouched(prev => ({
       ...prev,
       items: [
@@ -313,7 +336,6 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
         items: updatedItems
       }));
 
-      // Remove from errors and touched
       setErrors(prev => ({
         ...prev,
         items: (prev.items || []).filter((_, i) => i !== index)
@@ -335,15 +357,27 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
     return calculateSubtotal() * ((formData.taxRate || 0) / 100);
   };
 
+  const calculateDiscount = () => {
+    const subtotal = calculateSubtotal();
+    if (formData.discount.type === 'percentage') {
+      return subtotal * (formData.discount.value / 100);
+    } else if (formData.discount.type === 'fixed') {
+      return formData.discount.value;
+    }
+    return 0;
+  };
+
   const calculateTotal = () => {
-    return calculateSubtotal() + calculateTax();
+    const subtotal = calculateSubtotal();
+    const tax = calculateTax();
+    const discount = calculateDiscount();
+    return subtotal + tax - discount;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validateForm()) {
-      // Scroll to first error
       const firstErrorElement = document.querySelector('.error');
       if (firstErrorElement) {
         firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -353,14 +387,19 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
 
     setIsSubmitting(true);
 
-    // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 500));
+
+    const subtotal = calculateSubtotal();
+    const tax = calculateTax();
+    const discountAmount = calculateDiscount();
+    const total = calculateTotal();
 
     onSave({
       ...formData,
-      subtotal: calculateSubtotal(),
-      tax: calculateTax(),
-      total: calculateTotal(),
+      subtotal: subtotal,
+      tax: tax,
+      discountAmount: discountAmount,
+      total: total,
       updatedAt: new Date().toISOString()
     });
 
@@ -390,9 +429,6 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
     }));
   };
 
-  // REMOVED: getCurrencySymbol function since it's unused
-
-  // Safe items array for rendering
   const itemsToRender = Array.isArray(formData.items) ? formData.items : [];
 
   return (
@@ -511,32 +547,48 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
               <div className="section-badge">Vehicle Details</div>
             </div>
             
-            {Object.keys(formData.to || {}).map(field => (
-              <div key={field} className="form-group">
-                <label className="form-label">
-                  {field === 'vehicleName' ? 'Vehicle Name' : 
-                   field === 'vehicleNumber' ? 'Vehicle Number' :
-                   field.charAt(0).toUpperCase() + field.slice(1)}
-                  {field === 'name' && ' *'}
-                </label>
-                <input
-                  type="text"
-                  value={formData.to?.[field] || ''}
-                  onChange={(e) => handleInputChange('to', field, e.target.value)}
-                  onBlur={() => handleBlur('to', field)}
-                  className={`form-input ${errors.to?.[field] && touched.to?.[field] ? 'error' : ''}`}
-                  placeholder={
-                    field === 'vehicleName' ? 'e.g., Honda City' :
-                    field === 'vehicleNumber' ? 'e.g., DL01AB1234' :
-                    `Client ${field}`
-                  }
-                  required={field === 'name'}
-                />
-                {errors.to?.[field] && touched.to?.[field] && (
-                  <div className="error-message">{errors.to?.[field]}</div>
-                )}
-              </div>
-            ))}
+            {Object.keys(formData.to || {}).map(field => {
+              // Custom labels for specific fields
+              let label = field.charAt(0).toUpperCase() + field.slice(1);
+              let placeholder = `Client ${field}`;
+              
+              if (field === 'vehicleName') {
+                label = 'Vehicle Name';
+                placeholder = 'e.g., Honda City';
+              } else if (field === 'vehicleNumber') {
+                label = 'Vehicle Number';
+                placeholder = 'e.g., DL01AB1234';
+              } else if (field === 'serviceAtKm') {
+                label = 'Service at KM';
+                placeholder = 'e.g., 50000';
+              } else if (field === 'nextServiceAtKm') {
+                label = 'Next Service at KM';
+                placeholder = 'e.g., 55000';
+              }
+              
+              return (
+                <div key={field} className="form-group">
+                  <label className="form-label">
+                    {label}
+                    {field === 'name' && ' *'}
+                  </label>
+                  <input
+                    type={field.includes('Km') ? 'number' : 'text'}
+                    value={formData.to?.[field] || ''}
+                    onChange={(e) => handleInputChange('to', field, e.target.value)}
+                    onBlur={() => handleBlur('to', field)}
+                    className={`form-input ${errors.to?.[field] && touched.to?.[field] ? 'error' : ''}`}
+                    placeholder={placeholder}
+                    required={field === 'name'}
+                    min={field.includes('Km') ? '0' : undefined}
+                    step={field.includes('Km') ? '1' : undefined}
+                  />
+                  {errors.to?.[field] && touched.to?.[field] && (
+                    <div className="error-message">{errors.to?.[field]}</div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -633,7 +685,7 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
           </div>
         </div>
 
-        {/* Tax and Notes */}
+        {/* Tax, Discount and Notes */}
         <div className="form-section card">
           <div className="section-header">
             <h2>Additional Information</h2>
@@ -653,6 +705,44 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
                   max="100"
                 />
                 <span className="input-suffix">%</span>
+              </div>
+            </div>
+
+            {/* Discount Section */}
+            <div className="form-group">
+              <label className="form-label">Discount</label>
+              <div className="discount-controls">
+                <select
+                  value={formData.discount.type}
+                  onChange={(e) => handleDiscountChange('type', e.target.value)}
+                  className="form-input"
+                  style={{ marginBottom: '8px' }}
+                >
+                  <option value="none">No Discount</option>
+                  <option value="percentage">Percentage (%)</option>
+                  <option value="fixed">Fixed Amount (₹)</option>
+                </select>
+                
+                {(formData.discount.type === 'percentage' || formData.discount.type === 'fixed') && (
+                  <div className="input-with-suffix">
+                    <input
+                      type="number"
+                      value={formData.discount.value || 0}
+                      onChange={(e) => handleDiscountChange('value', parseFloat(e.target.value) || 0)}
+                      className={`form-input ${errors.discount ? 'error' : ''}`}
+                      step="0.01"
+                      min="0"
+                      max={formData.discount.type === 'percentage' ? 100 : undefined}
+                      placeholder={formData.discount.type === 'percentage' ? 'Discount %' : 'Discount Amount'}
+                    />
+                    <span className="input-suffix">
+                      {formData.discount.type === 'percentage' ? '%' : '₹'}
+                    </span>
+                  </div>
+                )}
+                {errors.discount && (
+                  <div className="error-message">{errors.discount}</div>
+                )}
               </div>
             </div>
             
@@ -682,6 +772,18 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
                 ₹{calculateSubtotal().toFixed(2)}
               </span>
             </div>
+            
+            {formData.discount.type !== 'none' && (
+              <div className="summary-row discount-row">
+                <span>
+                  Discount 
+                  {formData.discount.type === 'percentage' ? ` (${formData.discount.value}%)` : ''}:
+                </span>
+                <span style={{ color: '#ef4444' }}>
+                  -₹{calculateDiscount().toFixed(2)}
+                </span>
+              </div>
+            )}
             
             <div className="summary-row">
               <span>Tax ({formData.taxRate || 0}%):</span>

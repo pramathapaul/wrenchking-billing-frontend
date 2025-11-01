@@ -31,13 +31,16 @@ function App() {
       city: '',
       phone: '',
       vehicleName: '',
-      vehicleNumber: ''
+      vehicleNumber: '',
+      // ADDED: KM fields
+      serviceAtKm: '',
+      nextServiceAtKm: ''
     },
-    items: [{ 
-      id: Date.now(), 
-      description: '', 
-      quantity: 1, 
-      price: 0, 
+    items: [{
+      id: Date.now(),
+      description: '',
+      quantity: 1,
+      price: 0,
       total: 0,
       serviceCharge: 0
     }],
@@ -45,12 +48,17 @@ function App() {
     taxRate: 10,
     currency: 'INR',
     status: 'pending',
+    discount: {
+      type: 'none',
+      value: 0
+    },
+    discountAmount: 0,
     subtotal: 0,
     tax: 0,
     total: 0
   });
 
-  // Enhanced data validation and transformation - MOVED INSIDE useCallback
+  // Enhanced data validation and transformation
   const validateAndTransformInvoice = useCallback((invoice) => {
     if (!invoice) return getDefaultInvoiceStructure();
 
@@ -73,48 +81,57 @@ function App() {
         city: invoice.to?.city || '',
         phone: invoice.to?.phone || '',
         vehicleName: invoice.to?.vehicleName || '',
-        vehicleNumber: invoice.to?.vehicleNumber || ''
+        vehicleNumber: invoice.to?.vehicleNumber || '',
+        // ADDED: KM fields with proper handling
+        serviceAtKm: invoice.to?.serviceAtKm || '',
+        nextServiceAtKm: invoice.to?.nextServiceAtKm || ''
       },
       items: Array.isArray(invoice.items) && invoice.items.length > 0
         ? invoice.items.map(item => ({
-            id: item.id || Date.now() + Math.random(),
-            description: item.description || '',
-            quantity: typeof item.quantity === 'number' ? item.quantity : 1,
-            price: typeof item.price === 'number' ? item.price : 0,
-            serviceCharge: typeof item.serviceCharge === 'number' ? item.serviceCharge : 0,
-            total: typeof item.total === 'number' ? item.total : 0
-          }))
-        : [{ 
-            id: Date.now(), 
-            description: '', 
-            quantity: 1, 
-            price: 0, 
-            total: 0,
-            serviceCharge: 0
-          }],
+          id: item.id || Date.now() + Math.random(),
+          description: item.description || '',
+          quantity: typeof item.quantity === 'number' ? item.quantity : 1,
+          price: typeof item.price === 'number' ? item.price : 0,
+          serviceCharge: typeof item.serviceCharge === 'number' ? item.serviceCharge : 0,
+          total: typeof item.total === 'number' ? item.total : 0
+        }))
+        : [{
+          id: Date.now(),
+          description: '',
+          quantity: 1,
+          price: 0,
+          total: 0,
+          serviceCharge: 0
+        }],
       notes: invoice.notes || 'Thank you for your business!',
       taxRate: typeof invoice.taxRate === 'number' ? invoice.taxRate : 10,
       currency: invoice.currency || 'INR',
       status: invoice.status || 'pending',
+      discount: invoice.discount || {
+        type: 'none',
+        value: 0
+      },
+      discountAmount: typeof invoice.discountAmount === 'number' ? invoice.discountAmount : 0,
       subtotal: typeof invoice.subtotal === 'number' ? invoice.subtotal : 0,
       tax: typeof invoice.tax === 'number' ? invoice.tax : 0,
       total: typeof invoice.total === 'number' ? invoice.total : 0,
       createdAt: invoice.createdAt || new Date().toISOString(),
-      updatedAt: invoice.updatedAt || new Date().toISOString()
+      updatedAt: invoice.updatedAt || new Date().toISOString(),
+      paidDate: invoice.paidDate || null
     };
-  }, []); // Empty dependency array since it doesn't depend on external variables
+  }, []);
 
   // Load invoices from MongoDB with enhanced error handling
   const loadInvoices = useCallback(async () => {
     try {
       setLoading(true);
       const response = await invoiceAPI.getAll();
-      
+
       // Validate and transform all invoices
-      const validatedInvoices = response.data.map(invoice => 
+      const validatedInvoices = response.data.map(invoice =>
         validateAndTransformInvoice(invoice)
       );
-      
+
       setInvoices(validatedInvoices);
       setError(null);
     } catch (error) {
@@ -125,7 +142,7 @@ function App() {
     } finally {
       setLoading(false);
     }
-  }, [validateAndTransformInvoice]); // Added validateAndTransformInvoice to dependencies
+  }, [validateAndTransformInvoice]);
 
   // Load invoices on component mount
   useEffect(() => {
@@ -142,26 +159,40 @@ function App() {
       setLoading(true);
       let savedInvoice;
 
+      // Ensure discount object has proper structure and include KM fields
+      const processedData = {
+        ...invoiceData,
+        discount: invoiceData.discount || {
+          type: 'none',
+          value: 0
+        },
+        discountAmount: invoiceData.discountAmount || 0,
+        // Ensure KM fields are included
+        to: {
+          ...invoiceData.to,
+          serviceAtKm: invoiceData.to.serviceAtKm || '',
+          nextServiceAtKm: invoiceData.to.nextServiceAtKm || ''
+        }
+      };
+
       if (currentInvoice && currentInvoice._id) {
-        // Update existing invoice
-        const response = await invoiceAPI.update(currentInvoice._id, invoiceData);
+        const response = await invoiceAPI.update(currentInvoice._id, processedData);
         savedInvoice = validateAndTransformInvoice(response.data);
-        setInvoices(prev => prev.map(inv => 
+        setInvoices(prev => prev.map(inv =>
           inv._id === currentInvoice._id ? savedInvoice : inv
         ));
       } else {
-        // Create new invoice
-        const response = await invoiceAPI.create(invoiceData);
+        const response = await invoiceAPI.create(processedData);
         savedInvoice = validateAndTransformInvoice(response.data);
         setInvoices(prev => [savedInvoice, ...prev]);
       }
-      
+
       setView('list');
       setError(null);
     } catch (error) {
       console.error('Error saving invoice:', error);
       setError(error.userMessage || 'Failed to save invoice. Please try again.');
-      throw error; // Re-throw to handle in form component
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -186,7 +217,7 @@ function App() {
         await invoiceAPI.delete(invoiceId);
         setInvoices(prev => prev.filter(inv => inv._id !== invoiceId));
         setError(null);
-        
+
         // If we're viewing the deleted invoice, go back to list
         if (currentInvoice && currentInvoice._id === invoiceId) {
           setCurrentInvoice(null);
@@ -206,16 +237,16 @@ function App() {
       setLoading(true);
       const response = await invoiceAPI.markAsPaid(invoiceId);
       const updatedInvoice = validateAndTransformInvoice(response.data);
-      
-      setInvoices(prev => prev.map(inv => 
+
+      setInvoices(prev => prev.map(inv =>
         inv._id === invoiceId ? updatedInvoice : inv
       ));
-      
+
       // Update current invoice if it's being viewed
       if (currentInvoice && currentInvoice._id === invoiceId) {
         setCurrentInvoice(updatedInvoice);
       }
-      
+
       setError(null);
     } catch (error) {
       console.error('Error marking invoice as paid:', error);
@@ -230,7 +261,7 @@ function App() {
     const paid = invoices.filter(inv => inv.status === 'paid').length;
     const pending = invoices.filter(inv => inv.status === 'pending').length;
     const overdue = 0; // Since we removed due date
-    
+
     const totalAmount = invoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
     const paidAmount = invoices
       .filter(inv => inv.status === 'paid')
@@ -258,14 +289,14 @@ function App() {
             <h1>TheWrenchKing</h1>
           </div>
           <nav className="nav-menu">
-            <button 
+            <button
               onClick={() => setView('list')}
               className={`nav-btn ${view === 'list' ? 'active' : ''}`}
             >
               <span className="nav-icon">📋</span>
               <span className="nav-text">Invoices</span>
             </button>
-            <button 
+            <button
               onClick={handleCreateInvoice}
               className={`nav-btn ${view === 'form' ? 'active' : ''}`}
             >
