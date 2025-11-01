@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { format, addDays } from 'date-fns';
+import React, { useState, useEffect, useCallback } from 'react';
+import { format } from 'date-fns';
 import './InvoiceForm.css';
 
 const InvoiceForm = ({ invoice, onSave, onCancel }) => {
@@ -44,8 +44,8 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
     items: []
   });
 
-  // Safe data validation and transformation
-  const validateAndTransformInvoiceData = (invoiceData) => {
+  // Safe data validation and transformation - WRAPPED IN useCallback
+  const validateAndTransformInvoiceData = useCallback((invoiceData) => {
     if (!invoiceData) return getInitialFormData();
     
     return {
@@ -90,7 +90,7 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
       currency: 'INR',
       status: invoiceData.status || 'pending'
     };
-  };
+  }, []);
 
   useEffect(() => {
     if (invoice) {
@@ -119,7 +119,7 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
         from: {}
       });
     }
-  }, [invoice]);
+  }, [invoice, validateAndTransformInvoiceData]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -390,9 +390,7 @@ const InvoiceForm = ({ invoice, onSave, onCancel }) => {
     }));
   };
 
-  const getCurrencySymbol = () => {
-    return '₹';
-  };
+  // REMOVED: getCurrencySymbol function since it's unused
 
   // Safe items array for rendering
   const itemsToRender = Array.isArray(formData.items) ? formData.items : [];

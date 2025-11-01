@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import InvoiceForm from './components/InvoiceForm';
 import InvoiceList from './components/InvoiceList';
 import InvoicePreview from './components/InvoicePreview';
@@ -50,8 +50,8 @@ function App() {
     total: 0
   });
 
-  // Enhanced data validation and transformation
-  const validateAndTransformInvoice = (invoice) => {
+  // Enhanced data validation and transformation - MOVED INSIDE useCallback
+  const validateAndTransformInvoice = useCallback((invoice) => {
     if (!invoice) return getDefaultInvoiceStructure();
 
     // Ensure all required fields exist with proper fallbacks
@@ -102,10 +102,10 @@ function App() {
       createdAt: invoice.createdAt || new Date().toISOString(),
       updatedAt: invoice.updatedAt || new Date().toISOString()
     };
-  };
+  }, []); // Empty dependency array since it doesn't depend on external variables
 
   // Load invoices from MongoDB with enhanced error handling
-  const loadInvoices = async () => {
+  const loadInvoices = useCallback(async () => {
     try {
       setLoading(true);
       const response = await invoiceAPI.getAll();
@@ -125,12 +125,12 @@ function App() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [validateAndTransformInvoice]); // Added validateAndTransformInvoice to dependencies
 
   // Load invoices on component mount
   useEffect(() => {
     loadInvoices();
-  }, []);
+  }, [loadInvoices]);
 
   const handleCreateInvoice = () => {
     setCurrentInvoice(null);
